@@ -11,9 +11,9 @@ import socket
 import getpass
 def sshcmd(server):
     try:
-        print('Start to process '+server.rstrip()+'\n')
-        log=open(log_file,'a')
-        log.write('\n'+server.rstrip()+':Start to process '+server.rstrip()+'\n\n')
+        print("Start to process "+server.rstrip()+"\n")
+        log=open(log_file,"a")
+        log.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -23,43 +23,43 @@ def sshcmd(server):
             log.write(server.rstrip()+":"+cmd)
             for line in stdout.readlines():
                 log.write(server.rstrip()+":"+line)
-            log.write('\n')
+            log.write("\n")
         sshconn.close()
-        print('Process '+server.rstrip()+' successfully \n')
-        log.write(server.rstrip()+':Process '+server.rstrip()+' successfully \n')
+        print("Process "+server.rstrip()+" successfully \n")
+        log.write(server.rstrip()+":Process "+server.rstrip()+" successfully \n")
         log.flush()
         log.close()
         return True
     except paramiko.AuthenticationException as s:
-        print(server.rstrip(),s.__str__(),'\n')
-        log.write(server.rstrip()+' '+s.__str__()+'\n')
-        print('Process '+server.rstrip()+' failed \n')
-        log.write(server.rstrip()+':Process '+server.rstrip()+' failed \n')
+        print(server.rstrip(),s.__str__(),"\n")
+        log.write(server.rstrip()+" "+s.__str__()+"\n")
+        print("Process "+server.rstrip()+" failed \n")
+        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
     except paramiko.SSHException as p:
-        print(server.rstrip(),p.__str__(),'\n')
-        log.write(server.rstrip()+' '+p.__str__()+'\n')
-        print('Process '+server.rstrip()+' failed \n')
-        log.write(server.rstrip()+':Process '+server.rstrip()+' failed \n')
+        print(server.rstrip(),p.__str__(),"\n")
+        log.write(server.rstrip()+" "+p.__str__()+"\n")
+        print("Process "+server.rstrip()+" failed \n")
+        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
     except socket.error as t:
-        print(server.rstrip(),t.__str__(),'\n')
-        log.write(server.rstrip()+' '+t.__str__()+'\n')
-        print('Process '+server.rstrip()+' failed \n')
-        log.write(server.rstrip()+':Process '+server.rstrip()+' failed \n')
+        print(server.rstrip(),t.__str__(),"\n")
+        log.write(server.rstrip()+" "+t.__str__()+"\n")
+        print("Process "+server.rstrip()+" failed \n")
+        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
 def main():
     global log_file,cmd_list,user,passwd
     arguments = argparse.ArgumentParser()  
-    arguments.add_argument('-s','--server_list',nargs='?',help='The servers list')
-    arguments.add_argument('-c','--cmd_list',nargs='?',help='The command list')
-    arguments.add_argument('-l','--log', nargs='?',help='The log file,default result.log',default='result.log')
+    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list")
+    arguments.add_argument("-c","--cmd_list",nargs="?",help="The command list")
+    arguments.add_argument("-l","--log", nargs="?",help="The log file,default result.log",default="result.log")
     if len(sys.argv) ==1:
         arguments.print_help()
         sys.exit(1)
@@ -67,11 +67,11 @@ def main():
     server_list = open(args.server_list)
     cmd_list = args.cmd_list
     log_file =args.log
-    timestamp=time.strftime('%Y%m%d%H%M')
-    user=raw_input('Type the username to login: ')
+    timestamp=time.strftime("%Y%m%d%H%M")
+    user=raw_input("Type the username to login: ")
     passwd=getpass.getpass()
     if os.path.exists(log_file):
-        os.rename(log_file,log_file+'.'+timestamp)
+        os.rename(log_file,log_file+"."+timestamp)
     hosts=server_list.readlines()
     start_time=datetime.datetime.now()
     print(start_time)
@@ -83,5 +83,5 @@ def main():
     end_time=datetime.datetime.now()
     print(end_time)
     exit(0)
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
