@@ -68,7 +68,7 @@ def main():
     cmd_list = args.cmd_list
     log_file =args.log
     timestamp=time.strftime("%Y%m%d%H%M")
-    user=raw_input("Type the username to login: ")
+    user=input("Type the username to login: ")
     passwd=getpass.getpass()
     if os.path.exists(log_file):
         os.rename(log_file,log_file+"."+timestamp)
