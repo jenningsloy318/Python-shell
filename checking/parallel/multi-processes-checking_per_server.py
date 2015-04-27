@@ -12,7 +12,7 @@ import getpass
 def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
-        log=open(log_file,"a")
+        log=open(server.rstrip()+".log","w")
         log.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
@@ -55,7 +55,7 @@ def sshcmd(server):
         log.close()
         return False
 def main():
-    global log_file,cmd_list,user,passwd
+    global log_global_file,cmd_list,user,passwd
     arguments = argparse.ArgumentParser()  
     arguments.add_argument("-s","--server_list",nargs="?",help="The servers list")
     arguments.add_argument("-c","--cmd_list",nargs="?",help="The command list")
@@ -66,12 +66,12 @@ def main():
     args = arguments.parse_args()
     server_list = open(args.server_list)
     cmd_list = args.cmd_list
-    log_file =args.log
+    log_global_file =args.log
     timestamp=time.strftime("%Y%m%d%H%M")
     user=input("Type the username to login: ")
     passwd=getpass.getpass()
-    if os.path.exists(log_file):
-        os.rename(log_file,log_file+"."+timestamp)
+    if os.path.exists(log_global_file):
+        os.rename(log_global_file,log_global_file+"."+timestamp)
     hosts=server_list.readlines()
     start_time=datetime.datetime.now()
     print(start_time)
@@ -79,6 +79,11 @@ def main():
     pool.map(sshcmd,hosts)
     pool.close()
     pool.join()
+    log=open(log_global_file,"w")
+    for host in hosts:
+        for line in open(host.rstrip()+".log").readlines():
+            log.write(line)
+        os.remove(host.rstrip()+".log")
     server_list.close()
     end_time=datetime.datetime.now()
     print(end_time)
