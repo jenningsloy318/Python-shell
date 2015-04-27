@@ -13,44 +13,44 @@ def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
         log=open(log_file,"a")
-        log.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
+        log.write(":Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         sshconn.connect(hostname=server,username=user,password=passwd,timeout=50)
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
-            log.write(server.rstrip()+":"+cmd)
+            log.write(cmd)
             for line in stdout.readlines():
-                log.write(server.rstrip()+":"+line+"\n")
+                log.write(line+"\n")
             log.write("\n")
         sshconn.close()
         print("Process "+server.rstrip()+" successfully \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" successfully \n")
+        log.write(":Process "+server.rstrip()+" successfully \n")
         log.flush()
         log.close()
         return True
     except paramiko.AuthenticationException as s:
         print(server.rstrip(),s.__str__(),"\n")
-        log.write(server.rstrip()+" "+s.__str__()+"\n")
+        log.write(+s.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log.write(":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
     except paramiko.SSHException as p:
         print(server.rstrip(),p.__str__(),"\n")
-        log.write(server.rstrip()+" "+p.__str__()+"\n")
+        log.write(p.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log.write(":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
     except socket.error as t:
         print(server.rstrip(),t.__str__(),"\n")
-        log.write(server.rstrip()+" "+t.__str__()+"\n")
+        log.write(t.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log.write(":Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False

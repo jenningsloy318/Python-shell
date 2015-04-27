@@ -12,47 +12,47 @@ import getpass
 def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
-        log=open(server.rstrip()+".log","w")
-        log.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
+        log_sshdcmd=open(server.rstrip()+".log","w")
+        log_sshdcmd.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        sshconn.connect(hostname=server,username=user,password=passwd,timeout=50)
+        sshconn.connect(hostname=server,username=user,password=passwd,timeout=10)
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
-            log.write(server.rstrip()+":"+cmd)
+            log_sshdcmd.write(server.rstrip()+":"+cmd)
             for line in stdout.readlines():
-                log.write(server.rstrip()+":"+line+"\n")
-            log.write("\n")
+                log_sshdcmd.write(server.rstrip()+":"+line+"\n")
+            log_sshdcmd.write("\n")
         sshconn.close()
         print("Process "+server.rstrip()+" successfully \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" successfully \n")
-        log.flush()
-        log.close()
+        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" successfully \n")
+        log_sshdcmd.flush()
+        log_sshdcmd.close()
         return True
     except paramiko.AuthenticationException as s:
         print(server.rstrip(),s.__str__(),"\n")
-        log.write(server.rstrip()+" "+s.__str__()+"\n")
+        log_sshdcmd.write(server.rstrip()+" "+s.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
-        log.flush()
-        log.close()
+        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log_sshdcmd.flush()
+        log_sshdcmd.close()
         return False
     except paramiko.SSHException as p:
         print(server.rstrip(),p.__str__(),"\n")
-        log.write(server.rstrip()+" "+p.__str__()+"\n")
+        log_sshdcmd.write(server.rstrip()+" "+p.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
-        log.flush()
-        log.close()
+        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log_sshdcmd.flush()
+        log_sshdcmd.close()
         return False
     except socket.error as t:
         print(server.rstrip(),t.__str__(),"\n")
-        log.write(server.rstrip()+" "+t.__str__()+"\n")
+        log_sshdcmd.write(server.rstrip()+" "+t.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
-        log.flush()
-        log.close()
+        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" failed \n")
+        log_sshdcmd.flush()
+        log_sshdcmd.close()
         return False
 def main():
     global log_global_file,cmd_list,user,passwd
@@ -79,11 +79,12 @@ def main():
     pool.map(sshcmd,hosts)
     pool.close()
     pool.join()
-    log=open(log_global_file,"w")
+    log_global=open(log_global_file,"w")
     for host in hosts:
         for line in open(host.rstrip()+".log").readlines():
-            log.write(line)
+            log_global.write(line)
         os.remove(host.rstrip()+".log")
+    log_global.close()
     server_list.close()
     end_time=datetime.datetime.now()
     print(end_time)
