@@ -12,7 +12,7 @@ import getpass
 def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
-        log_sshdcmd=open("/tmp/"+server.rstrip()+".log","w")
+        log_sshdcmd=open("/tmp/."+server.rstrip()+".log","w")
         log_sshdcmd.write("\n"+server.rstrip()+":Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
@@ -81,9 +81,9 @@ def main():
     pool.join()
     log_global=open(log_global_file,"w")
     for host in hosts:
-        for line in open("/tmp/"+host.rstrip()+".log").readlines():
+        for line in open("/tmp/."+host.rstrip()+".log").readlines():
             log_global.write(line)
-        os.remove("/tmp/"+host.rstrip()+".log")
+        os.remove("/tmp/."+host.rstrip()+".log")
     log_global.close()
     server_list.close()
     end_time=datetime.datetime.now()
