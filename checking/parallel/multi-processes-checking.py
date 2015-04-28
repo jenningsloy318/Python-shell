@@ -13,7 +13,7 @@ def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
         log=open(log_file,"a")
-        log.write(":Start to process "+server.rstrip()+"\n\n")
+        log.write("Start to process "+server.rstrip()+"\n\n")
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -26,7 +26,7 @@ def sshcmd(server):
             log.write("\n")
         sshconn.close()
         print("Process "+server.rstrip()+" successfully \n")
-        log.write(":Process "+server.rstrip()+" successfully \n")
+        log.write("Process "+server.rstrip()+" successfully \n")
         log.flush()
         log.close()
         return True
@@ -34,7 +34,7 @@ def sshcmd(server):
         print(server.rstrip(),s.__str__(),"\n")
         log.write(+s.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(":Process "+server.rstrip()+" failed \n")
+        log.write("Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
@@ -42,7 +42,7 @@ def sshcmd(server):
         print(server.rstrip(),p.__str__(),"\n")
         log.write(p.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(":Process "+server.rstrip()+" failed \n")
+        log.write("Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
@@ -50,7 +50,7 @@ def sshcmd(server):
         print(server.rstrip(),t.__str__(),"\n")
         log.write(t.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
-        log.write(":Process "+server.rstrip()+" failed \n")
+        log.write("Process "+server.rstrip()+" failed \n")
         log.flush()
         log.close()
         return False
