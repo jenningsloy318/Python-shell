@@ -21,9 +21,9 @@ def sshcmd(server,user,passwd,cmd_list):
         sshconn.connect(hostname=server,username=user,password=passwd,timeout=10)
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
-            log.write(cmd)
+            log.write(server.rstrip()+":"+cmd)
             for line in stdout.read():
-                log.writelines(line)
+                log.writelines(server.rstrip()+":"+line)
             log.write("\n")
         sshconn.close()
         log.write("Process "+server.rstrip()+" successfully \n")
