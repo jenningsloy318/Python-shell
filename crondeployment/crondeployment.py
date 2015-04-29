@@ -9,6 +9,8 @@ import time
 import datetime
 import socket
 import getpass
+def generate_cvs():
+    dp_list=[]
 def main():
     global log_file,cmd_list,user,passwd
     arguments = argparse.ArgumentParser()  
