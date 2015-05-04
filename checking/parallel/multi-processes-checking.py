@@ -32,7 +32,7 @@ def sshcmd(server):
         return True
     except paramiko.AuthenticationException as s:
         print(server.rstrip(),s.__str__(),"\n")
-        log.write(+s.__str__()+"\n")
+        log.write(s.__str__()+"\n")
         print("Process "+server.rstrip()+" failed \n")
         log.write("Process "+server.rstrip()+" failed \n")
         log.flush()

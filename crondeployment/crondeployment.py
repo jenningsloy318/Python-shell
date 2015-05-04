@@ -9,8 +9,13 @@ import time
 import datetime
 import socket
 import getpass
-def generate_cvs():
-    dp_list=[]
+import mysqli
+import mysql.connector
+def generate_cvs(dplist_file):
+    dplist = open(dplist_file.'w')    
+    mysql_connection=mysql.connector.connect(user='iterikl',password='synnex2k11',host='fca-mygbluat.synnex.org',port='3408',database='onetool')
+     for dp in dplist.readlines():
+        DO_id_query=(select a.cron_do_id,a.file_path as cvs_file_path,a.new_version from itt_cron_do_file a  inner join itt_cron_do b where  a.cron_do_id = b.id and b.deploy_plan_id=7183;)
 def main():
     global log_file,cmd_list,user,passwd
     arguments = argparse.ArgumentParser()  
