@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import mysql.connector
-mysql_connection=mysql.connector.connect(user='iterikl',password='synnex2k11',host='Fca-MyGblUat.synnex.org',port='3408',database='onetool')
+mysql_connection=mysql.connector.connect(user='',password='',host='',port='3408',database='onetool')
 mysql_cursor = mysql_connection.cursor()
 DO_id_sql=("select b.deploy_plan_id,a.cron_do_id,d.server_name,d.domain_name,d.server_ip,e.download_cmd,a.new_version,a.file_path as cvs_file_path,a.operation from itt_cron_do_file a inner join itt_cron_do b on a.cron_do_id = b.id inner join itt_cron_do_runtime c  on b.id = c.cron_do_id inner join itt_cron_server d  on c.cron_server = d.id inner join itt_vcs e on a.vcs_id = e.id where b.deploy_plan_id= %s")
 #mysql_cursor.executemany(DO_id_sql,(7183,))
