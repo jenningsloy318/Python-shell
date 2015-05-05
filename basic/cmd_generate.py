@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import datetime
+from dateutil.relativedelta import relativedelta
 def main():
     global cmd_list
     current_time=datetime.datetime.now()
-    monthdelta=datetime.timedelta(days=-30)
-    yeardelta=datetime.timedelta(days=-365)
+    monthdelta=relativedelta(months=-1)
+    #monthdelta=datetime.timedelta(days=-30)
+    #yeardelta=datetime.timedelta(days=-365)
+    yeardelta=relativedelta(years=-1)
     time_1_month_ago=current_time+monthdelta
     time_2_month_ago=time_1_month_ago+monthdelta
     time_3_month_ago=time_2_month_ago+monthdelta
