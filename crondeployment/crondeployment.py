@@ -12,10 +12,11 @@ import getpass
 import mysqli
 import mysql.connector
 def generate_cvs(dplist_file):
-    dplist = open(dplist_file.'w')    
+    dplist = open(dplist_file,'w')    
     mysql_connection=mysql.connector.connect(user='',password='',host='',port='3408',database='onetool')
      for dp in dplist.readlines():
-        DO_id_query=(select a.cron_do_id,a.file_path as cvs_file_path,a.new_version from itt_cron_do_file a  inner join itt_cron_do b where  a.cron_do_id = b.id and b.deploy_plan_id=7183;)
+        DO_id_query=(select b.deploy_plan_id,a.cron_do_id,d.server_name,d.domain_name,d.server_ip,e.download_cmd,a.new_version,a.file_path as cvs_file_path,a.operation from itt_cron_do_file a inner join itt_cron_do b on a.cron_do_id=b.id inner join itt_cron_do_runtime c  on b.id = c.cron_do_id inner join itt_cron_server d  on c.cron_server = d.id inner join itt_vcs e on a.vcs_id =e.id where b.deploy_plan_id=7183 order by a.cron_do_id,d.domain_name;)
+
 def main():
     global log_file,cmd_list,user,passwd
     arguments = argparse.ArgumentParser()  
