@@ -21,6 +21,9 @@ def sshcmd(server):
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
             log.write(cmd)
+            for err_line in stderr.readlines():
+                print(err_line.rstrip())
+                log.write(err_line+'\n')
             for line in stdout.readlines():
                 log.write(line+"\n")
             log.write("\n")

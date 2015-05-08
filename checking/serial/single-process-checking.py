@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 import paramiko
 import sys
@@ -6,6 +7,7 @@ import argparse
 import time
 import datetime
 import socket
+import codecs
 def sshcmd(servername,server,user,passwd,cmd_list):
     try:
         print("Start to process "+server.rstrip()+"\n")
@@ -13,6 +15,7 @@ def sshcmd(servername,server,user,passwd,cmd_list):
         cmds = open(cmd_list)
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        #print(ord(passwd))
         sshconn.connect(hostname=server,username=user.rstrip(),password=passwd.rstrip(),timeout=10)
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)

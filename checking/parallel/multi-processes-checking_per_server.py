@@ -21,7 +21,12 @@ def sshcmd(server):
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
             log_sshdcmd.write(server.rstrip()+":"+cmd)
+            print(server.rstrip()+":"+cmd)
+            for err_line in stderr.readlines():
+                print(server.rstrip()+':'+err_line.rstrip())
+                log_sshdcmd.write(server.rstrip()+':'+err_line+'\n')
             for line in stdout.readlines():
+                print(server.rstrip()+":"+line+"\n")
                 log_sshdcmd.write(server.rstrip()+":"+line+"\n")
             log_sshdcmd.write("\n")
         sshconn.close()
@@ -81,9 +86,10 @@ def main():
     pool.join()
     log_global=open(log_global_file,"w")
     for host in hosts:
-        for line in open("/tmp/."+host.rstrip()+".log").readlines():
-            log_global.write(line)
-        os.remove("/tmp/."+host.rstrip()+".log")
+        if os.path.exists("/tmp/."+host.rstrip()+".log"):
+            for line in open("/tmp/."+host.rstrip()+".log").readlines():
+                log_global.write(line)
+            os.remove("/tmp/."+host.rstrip()+".log")
     log_global.close()
     server_list.close()
     end_time=datetime.datetime.now()
