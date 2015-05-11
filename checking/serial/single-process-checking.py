@@ -8,7 +8,7 @@ import time
 import datetime
 import socket
 import codecs
-def sshcmd(servername,server,user,passwd,cmd_list):
+def sshcmd(servername,server,user,passwd,port,cmd_list):
     try:
         print("Start to process "+server.rstrip()+"\n")
         log.write("\nStart to process "+servername+':'+server.rstrip()+"\n\n")
@@ -16,7 +16,7 @@ def sshcmd(servername,server,user,passwd,cmd_list):
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         #print(ord(passwd))
-        sshconn.connect(hostname=server,username=user.rstrip(),password=passwd.rstrip(),timeout=10)
+        sshconn.connect(hostname=server,port=port,username=user.rstrip(),password=passwd.rstrip(),timeout=10)
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
             #print(stderr.readlines())
@@ -79,15 +79,22 @@ def main():
     print(start_time)
     #for hostip in open(server_list):
     for host_line in open(server_list):
-        (host_name,hostip,user,passwd) = host_line.split(",",3)
-        if sshcmd(host_name,hostip,user,passwd,cmd_list):
-           print("\nProcess "+host_name+':'+hostip.rstrip()+" successfully \n")
-           print("-----------------------------------------------------------\n")
-           log.flush()
+        if len(host_line) > 4:
+            (host_name,hostip,user,passwd) = host_line.split(",",3)
+            if hostip in ['10.88.126.88','192.168.18.131']:
+                port=2222
+            else:
+                port=22
+            if sshcmd(host_name,hostip,user,passwd,port,cmd_list):
+               print("\nProcess "+host_name+':'+hostip.rstrip()+" successfully \n")
+               print("-----------------------------------------------------------\n")
+               log.flush()
+            else:
+               print("\nProcess "+host_name+':'+hostip.rstrip()+" failed \n")
+               print("-----------------------------------------------------------\n")
+               log.flush()
         else:
-           print("\nProcess "+host_name+':'+hostip.rstrip()+" failed \n")
-           print("-----------------------------------------------------------\n")
-           log.flush()
+            continue
     log.close()
     end_time=datetime.datetime.now()
     print(end_time)
