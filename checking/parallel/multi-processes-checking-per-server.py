@@ -18,20 +18,26 @@ def sshcmd(server):
         sshconn= paramiko.SSHClient()
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         sshconn.connect(hostname=server,username=user,password=passwd,timeout=10)
+        print("Login to "+server.rstrip()+" successfully\n")
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
             log_sshdcmd.write(server.rstrip()+":"+cmd)
+            print('The exit code of command <'+cmd.rstrip()+'> is: ',stdout.channel.recv_exit_status())
             print(server.rstrip()+":"+cmd)
-            for err_line in stderr.readlines():
-                print(server.rstrip()+':'+err_line.rstrip())
-                log_sshdcmd.write(server.rstrip()+':'+err_line+'\n')
-            for line in stdout.readlines():
-                print(server.rstrip()+":"+line+"\n")
-                log_sshdcmd.write(server.rstrip()+":"+line+"\n")
+            if stdout.channel.recv_exit_status() == 0:
+                for line in stdout.readlines():
+                    print(server.rstrip()+":"+line+"\n")
+                    log_sshdcmd.write(server.rstrip()+":"+line+"\n")
+                print('excute command <'+cmd.rstrip() +'> sucessfully')
+            else:
+                for out_line in stderr.readlines()+stdout.readlines():
+                    print(server.rstrip()+':'+out_line+"\n")
+                    log_sshdcmd.write(server.rstrip()+':'+out_line+'\n')
+                print('\033[1;31;47mexcute command <'+cmd.rstrip()+'> failed\033[0m')
             log_sshdcmd.write("\n")
         sshconn.close()
-        print("Process "+server.rstrip()+" successfully \n")
-        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" successfully \n")
+        print("Process "+server.rstrip()+" Finished \n")
+        log_sshdcmd.write(server.rstrip()+":Process "+server.rstrip()+" Finished \n")
         log_sshdcmd.flush()
         log_sshdcmd.close()
         return True

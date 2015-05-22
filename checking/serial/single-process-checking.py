@@ -17,20 +17,30 @@ def sshcmd(servername,server,user,passwd,port,cmd_list):
         sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         #print(ord(passwd))
         sshconn.connect(hostname=server,port=port,username=user.rstrip(),password=passwd.rstrip(),timeout=10)
+        print("Login to "+server.rstrip()+" successfully\n")
+        log.write("Login to "+server.rstrip()+" successfully\n")
+
         for cmd in cmds:
             stdin, stdout, stderr = sshconn.exec_command(cmd)
+            print('The exit code of command <'+cmd.rstrip()+'> is: ',stdout.channel.recv_exit_status())
             #print(stderr.readlines())
             log.write(cmd)
+            if stdout.channel.recv_exit_status() == 0:
+                for line in stdout.readlines():
+                    print(line.rstrip())
+                    log.write(line)
+                print('excute command <'+cmd.rstrip() +'> sucessfully')
+            else:
+                for out_line in stderr.readlines()+stdout.readlines():
+                    print(out_line.rstrip())
+                    log.write(out_line)
+                print('\033[1;31;47mexcute command <'+cmd.rstrip()+'> failed\033[0m')
+
             #print(stderr.readlines())
             #log.write(stderr.readlines())
-            for err_line in stderr.readlines():
-                print(err_line.rstrip())
-                log.write(err_line+'\n')
-            for line in stdout.readlines():
-                log.writelines(line.rstrip()+'\n')
             log.write("\n")
         sshconn.close()
-        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" successfully \n")
+        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" Finished \n")
         log.write("################################################################ \n")
         return True
     except paramiko.AuthenticationException as s:
@@ -79,7 +89,7 @@ def main():
     print(start_time)
     #for hostip in open(server_list):
     for host_line in open(server_list):
-        if len(host_line) > 4:
+        if len(host_line) > 8:
             (host_name,hostip,user,passwd) = host_line.split(",",3)
             if hostip in ['10.88.126.88','192.168.18.131']:
                 port=2222
