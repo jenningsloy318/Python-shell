@@ -89,7 +89,7 @@ def main():
     print(start_time)
     #for hostip in open(server_list):
     for host_line in open(server_list):
-        if len(host_line) > 8:
+        if len(host_line) > 8:#aline contain for section, and an IP will at least has 7 characters
             (host_name,hostip,user,passwd) = host_line.split(",",3)
             if hostip in ['10.88.126.88','192.168.18.131']:
                 port=2222
