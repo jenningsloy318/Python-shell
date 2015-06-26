@@ -22,8 +22,9 @@ import atexit
 
 from pyVim import connect
 from pyVmomi import vmodl
-
-
+import argparse
+import getpass
+import sys
 
 def print_vm_info(virtual_machine, depth=1):
     """
@@ -60,20 +61,35 @@ def main():
     """
     Simple command-line program for listing the virtual machines on a system.
     """
+    parser= argparse.ArgumentParser()  
+    parser.add_argument('-s', '--host',required=True,action='store', help='vSphere service to connect to')
+
+    # because we want -p for password, we use -o for port
+    parser.add_argument('-o', '--port',type=int,default=443,action='store',help='Port to connect on')
+    parser.add_argument('-u', '--user',required=True,action='store',help='User name to use when connecting to host')
+    parser.add_argument('-p', '--password',required=False,action='store',help='Password to use when connecting to host')
+    args = parser.parse_args()
+    if not args.password:
+        args.password = getpass.getpass(
+            prompt='Enter password for host %s and user %s: ' %
+                   (args.host, args.user))
+    if len(sys.argv) ==1:
+        arguments.print_help()
+        sys.exit(1)
 
 
     try:
         import ssl
         default_context = ssl._create_default_https_context
         ssl._create_default_https_context = ssl._create_unverified_context
-        vimserver='fca-vc6.synnex.org'
-        user='domain\\user'
-        password='passwd'
-        port=443
-        service_instance = connect.SmartConnect(host=vimserver,
-                                                user=user,
-                                                pwd=password,
-                                                port=int(port))
+     #   vimserver='fca-vc6.synnex.org'
+     #   user='domain\\user'
+     #   password='passwd'
+     #   port=443
+        service_instance = connect.SmartConnect(host=args.host,
+                                                user=args.user,
+                                                pwd=args.password,
+                                                port=int(args.port))
 
         atexit.register(connect.Disconnect, service_instance)
 
