@@ -48,12 +48,13 @@ def print_vm_info(virtual_machine, depth=1):
         ip_address = summary.guest.ipAddress
         tools_version = summary.guest.toolsStatus
         powerState=summary.runtime.powerState
-        name=summary.config.name
+        vmname=summary.config.name
+        hostname=summary.guest.hostName 
         guest=summary.config.guestFullName
         memsize=str(summary.config.memorySizeMB)
         cpunum=str(summary.config.numCpu)
         if ip_address is not None and powerState=='poweredOn' and 'Red Hat' in guest:
-            print(name+","+ip_address+","+powerState+","+guest+","+memsize+"MB,"+cpunum+" CPUs")
+            print(name+","+hostname+","+ip_address+","+powerState+","+guest+","+memsize+"MB,"+cpunum+" CPUs")
 
 def main():
     """
