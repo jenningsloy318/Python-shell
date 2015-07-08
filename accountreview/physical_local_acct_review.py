@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
 import paramiko
 import sys
@@ -26,15 +25,20 @@ def cmdgen():
     last_year=current_time+yeardelta
     grep_month=time_1_month_ago.strftime('%Y-%b')+'|'+time_2_month_ago.strftime('%Y-%b')+'|'+time_3_month_ago.strftime('%Y-%b')+'|'+time_4_month_ago.strftime('%Y-%b')+'|'+time_5_month_ago.strftime('%Y-%b')+'|'+time_6_month_ago.strftime('%Y-%b')
     grep_year=current_time.strftime('%Y')+'|'+last_year.strftime('%Y')
-    cmd_lastlog='cat /var/adm/wtmpx | /usr/lib/acct/fwtmp'+'|'+'/usr/xpg4/bin/grep -E "pts|console"|'+'/usr/xpg4/bin/grep -E -v "login|telnet|down|eboot|LOGIN"'+'|'+'/usr/xpg4/bin/grep -E "'+grep_year+'"'+'|'+'awk '''''{print $1,$NF"-"$(NF-3)}'''+"'"+'|/usr/xpg4/bin/grep -E "'+grep_month+'"'+'|sort -k1|'+'awk '''''{print $1}'''+"'"+'|uniq -c|'+'awk '''''{print HOSTNAME","$2","$1}'''+"'"+' HOSTNAME=`hostname`'
+#    cmd_lastlog='''local_accts="`cat /etc/passwd |grep -v "^#"| /usr/xpg4/bin/awk -F: '{print $1}'`";'''+'cat /var/adm/wtmpx | /usr/lib/acct/fwtmp'+'|'+'/usr/xpg4/bin/grep -E "pts|console"|'+'/usr/xpg4/bin/grep -E -v "login|telnet|down|eboot|LOGIN"'+'|'+'/usr/xpg4/bin/grep -E "'+grep_year+'"'+'|'+' /usr/xpg4/bin/awk '''''{print $1,$NF"-"$(NF-3)}'''+"'"+'|/usr/xpg4/bin/grep -E "'+grep_month+'"'+'|sort -k1|'+' /usr/xpg4/bin/awk '''''{print $1}'''+"'"+'|uniq -c|'+' /usr/xpg4/bin/awk ''''-v HOSTNAME=`hostname` '{if($local_accts~$2){print HOSTNAME","$2","$1",Local";}else{print HOSTNAME","$2","$1",LDAP";}}'''+"'"
+    cmd_lastlog='''local_accts="`cat /etc/passwd |grep -v "^#"| /usr/xpg4/bin/awk -F: '{print $1}'`";'''+'cat /var/adm/wtmpx | /usr/lib/acct/fwtmp'+'|'+'/usr/xpg4/bin/grep -E "pts|console"|'+'/usr/xpg4/bin/grep -E -v "login|telnet|down|eboot|LOGIN"'+'|'+'/usr/xpg4/bin/grep -E "'+grep_year+'"'+'|'+' /usr/xpg4/bin/awk '''''{print $1,$NF"-"$(NF-3)}'''+"'"+'|/usr/xpg4/bin/grep -E "'+grep_month+'"'+'|sort -k1|'+' /usr/xpg4/bin/awk '''''{print $1}'''+"'"+'|uniq -c|'+''' /usr/xpg4/bin/awk '{print $0}'| while read line; do  acct=`echo $line| awk '{print $2}'` ;[[ "$local_accts" =~ "$acct" ]] && echo $line |/usr/xpg4/bin/awk -v HOSTNAME=`hostname` '{print HOSTNAME","$2","$1",Local"}' || echo $line |/usr/xpg4/bin/awk -v HOSTNAME=`hostname` '{print HOSTNAME","$2","$1",LDAP"}' ;done'''
     cmd_lastlog_accts='login_accts=`cat /var/adm/wtmpx | /usr/lib/acct/fwtmp'+'|'+'/usr/xpg4/bin/grep -E "pts|console"|'+'/usr/xpg4/bin/grep -E -v "login|telnet|down|eboot|LOGIN"'+'|'+'/usr/xpg4/bin/grep -E "'+grep_year+'"'+'|'+'awk '''''{print $1,$NF"-"$(NF-3)}'''+"'"+'|/usr/xpg4/bin/grep -E "'+grep_month+'"'+'|sort -k1|'+'awk '''''{print $1}'''+"'"+'|uniq -c|'+'awk '''''{print $2}'''+"'`"
     cmd_lastlog_title='echo "Server_IP,Hostname,Acct,Number of Acct access"'
     cmd_non_OS_acct='cat /etc/passwd| egrep -v "abrt|nfsnobody|saslauth|rabbitmq|mysql|nrpe|clam|memcached|rrdcached|nagios|redis|ntop|vpn|zenoss|dovenull|mapred|zookeeper|impala|noaccess|nobody|ftp|ssh|avahi" |'+'awk -F: '''''{ if ( $3 > 100 ) print  $1}'''+"'"
     cmd_non_OS_acct_title='echo "Server_IP,Non OS accts"'
-    cmd_non_access=cmd_lastlog_accts+';for acct in `cat /etc/passwd| egrep -v "abrt|nfsnobody|saslauth|rabbitmq|mysql|nrpe|clam|memcached|rrdcached|nagios|redis|ntop|vpn|zenoss|dovenull|mapred|zookeeper|impala|noaccess|nobody|ftp|ssh|avahi"'+'|awk -F: '''''{ if ( $3 > 100 ) print  $1}'''+"'`;"+'do echo $login_accts|/usr/xpg4/bin/grep -q $acct;[ $? -ne 0 ] && echo "$HOSTNAME,$acct,0" ; done'
+    cmd_non_local_access=cmd_lastlog_accts+';for acct in `cat /etc/passwd|grep -v "^$"| egrep -v "abrt|nfsnobody|saslauth|rabbitmq|mysql|nrpe|clam|memcached|rrdcached|nagios|redis|ntop|vpn|zenoss|dovenull|mapred|zookeeper|impala|noaccess|nobody|ftp|ssh|avahi"'+'|awk -F: '''''{ if ( $3 > 100 ) print  $1}'''+"'`;"+'do echo $login_accts|/usr/xpg4/bin/grep -q $acct;[ $? -ne 0 ] && echo "$HOSTNAME,$acct,0,Local" ; done'
+    cmd_non_ldap_access=cmd_lastlog_accts+''';for acct in `ldaplist passwd | awk -F, '{print $1}' | awk -F"=" '{print$2}' |grep -v "^$"`;'''+'do echo $login_accts|/usr/xpg4/bin/grep -q $acct;[ $? -ne 0 ] && echo "$HOSTNAME,$acct,0,LDAP" ; done'
 #    cmd_non_access_title='echo "Server_IP,Non-Access Accouts "'
 #    cmd_list=[cmd_non_OS_acct_title,cmd_non_OS_acct,cmd_lastlog_title,cmd_lastlog,cmd_non_access_title,cmd_non_access]
-    cmd_list=[cmd_lastlog_title,cmd_lastlog,cmd_non_access]
+    cmd_list=[cmd_lastlog_title,cmd_lastlog,cmd_non_local_access,cmd_non_ldap_access]
+    print(cmd_lastlog)
+    print(cmd_non_local_access)
+    print(cmd_non_ldap_access)
 def sshcmd(server):
     try:
         print("Start to process "+server.rstrip()+"\n")
