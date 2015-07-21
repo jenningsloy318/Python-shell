@@ -25,7 +25,7 @@ from pyVmomi import vmodl
 import argparse
 import getpass
 import sys
-
+import requests
 def print_vm_info(virtual_machine, depth=1):
     """
     Print information for a particular virtual machine or recurse into a
@@ -82,6 +82,8 @@ def main():
         import ssl
         default_context = ssl._create_default_https_context
         ssl._create_default_https_context = ssl._create_unverified_context
+        requests.packages.urllib3.disable_warnings()
+        
      #   vimserver='fca-vc6.synnex.org'
      #   user='domain\\user'
      #   password='passwd'
