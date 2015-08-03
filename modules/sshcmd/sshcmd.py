@@ -3,7 +3,7 @@
 # Jennings Liu@ 2015-06-25 08:45:22
 import paramiko
 import socket
-class sshcmd(object):
+class remotessh(object):
     def __init__(self,ip,port,user,passwd,cmdlist,cmdlog):
         self.ip=ip
         self.port=port
@@ -11,7 +11,7 @@ class sshcmd(object):
         self.passwd=passwd
         self.cmdlist=cmdlist
         self.cmdlog=cmdlog
-    def run(self):
+    def exec(self):
         try:
             sshconn= paramiko.SSHClient()
             sshconnlog=open(self.cmdlog,'w')
