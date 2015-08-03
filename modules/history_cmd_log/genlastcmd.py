@@ -8,7 +8,7 @@
 class cmdgen(object):
     def __init__(self, type):
         self.type=type
-    def cmdgen(self):
+    def cmdout(self):
          import os
          import paramiko
          import sys
