@@ -5,4 +5,5 @@
 >- checking contains common script
 >- crondepyment tools to deploy the crons
 >- modules about the module that used in these scripts
->- vmware scripts operat with vmware vsphere vcenter
+>- vmware scripts operate with vmware vsphere vcenter
+>- zenoss scripts operate with zenoss monitor to get/add/remove/modify components
