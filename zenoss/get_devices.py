@@ -7,7 +7,7 @@ import sys
 
 arguments = argparse.ArgumentParser()  
 arguments.add_argument("-s","--server",nargs="?",help="The zenoss server ipaddress")
-arguments.add_argument("-u","--user",nargs="?",help="The user of zenoss server  ")
+arguments.add_argument("-u","--user",nargs="?",help="The user of zenoss server",default="admin")
 if len(sys.argv) ==1:
    arguments.print_help()
    sys.exit(1)
@@ -35,4 +35,4 @@ newsession=zenoss_session(ZENOSS_USERNAME,ZENOSS_PASSWORD,ZENOSS_INSTANCE,ROUTER
 deviceClass='/zport/dmd/Devices'
 operation_result=newsession.router_request('DeviceRouter', 'getDevices',data=[{'uid': deviceClass,'params': {},'limit':10000 }])['result']
 for devID in range(len(operation_result['devices'])):
-    print devID,operation_result['devices'][devID]
+    print devID,':',operation_result['devices'][devID]

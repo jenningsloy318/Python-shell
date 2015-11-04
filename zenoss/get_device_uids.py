@@ -36,5 +36,5 @@ newsession=zenoss_session(ZENOSS_USERNAME,ZENOSS_PASSWORD,ZENOSS_INSTANCE,ROUTER
 deviceClass='/zport/dmd/Devices'
 operation_result=newsession.router_request('DeviceRouter', 'getDeviceUids',data=[{'uid': deviceClass}])['result']
 for devID in range(len(operation_result['devices'])):
-    print operation_result['devices'][devID]
+    print devID,':',operation_result['devices'][devID]
 
