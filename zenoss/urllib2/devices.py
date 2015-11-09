@@ -19,13 +19,13 @@ class zenoss_session(object):
         self.urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
         if self.debug: self.urlOpener.add_handler(urllib2.HTTPHandler(debuglevel=1))
         self.reqCount = 1
-
         # Contruct POST params and submit login.
         loginParams = urllib.urlencode(dict(
                         __ac_name = self.zenoss_username,
                         __ac_password = self.zenoss_password,
                         submitted = 'true',
-                        came_from = self.zenoss_instance + '/zport/dmd'))
+                        came_fraaaaaom = self.zenoss_instance + '/zport/dmd'))
+
         self.urlOpener.open(self.zenoss_instance + '/zport/acl_users/cookieAuthHelper/login',
                             loginParams)
 
@@ -51,7 +51,7 @@ class zenoss_session(object):
         # Increment the request count ('tid'). More important if sending multiple
         # calls in a single request
         self.reqCount += 1
-
+        print reqData
         # Submit the request and convert the returned JSON to objects
         return json.loads(self.urlOpener.open(req, reqData).read())
 
