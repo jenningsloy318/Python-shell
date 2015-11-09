@@ -71,8 +71,8 @@ def sshcmd(servername,server,user,passwd,port,cmd_list):
 def main():
     global log 
     arguments = argparse.ArgumentParser()  
-    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list")
-    arguments.add_argument("-c","--cmd_list",nargs="?",help="The command list")
+    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list",required=True)
+    arguments.add_argument("-c","--cmd_list",nargs="?",help="The command list",required=True)
     arguments.add_argument("-l","--log", nargs="?",help="The log file,default result.log",default="result.log")
     if len(sys.argv) ==1:
         arguments.print_help()

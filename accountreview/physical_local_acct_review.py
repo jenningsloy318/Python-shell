@@ -93,7 +93,7 @@ def sshcmd(server):
 def main():
     global log_global_file,user,passwd
     arguments = argparse.ArgumentParser()  
-    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list")
+    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list",required=True)
     arguments.add_argument("-l","--log", nargs="?",help="The log file,default result.log",default="result.log")
     if len(sys.argv) ==1:
         arguments.print_help()
