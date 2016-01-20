@@ -51,11 +51,11 @@ class pyvmware(object):
                 vmlist.append(vmtuple)
             sub_resourcepool=resourcepool.resourcePool
             for c in sub_resourcepool:
-                list_vms(c,vmlist)
+                self.get_resourecepool_vms(c,vmlist)
         elif  hasattr(resourcepool,'resourcePool') and not hasattr(resourcepool,'vm'):
             sub_resourcepool=resourcepool.resourcePool
             for c in sub_resourcepool:
-                list_vms(c,vmlist)
+                self.get_resourecepool_vms(c,vmlist)
         elif not hasattr(resourcepool,'resourcePool') and  hasattr(resourcepool,'vm'):
             for vm in resourcepool.vm:
                 vmtuple=self.get_vminfo(vm)

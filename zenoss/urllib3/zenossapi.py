@@ -4,6 +4,7 @@
 
 from urllib3 import HTTPConnectionPool
 import json
+import sys
 class deviceapi(object):
     def __init__(self,zenoss_server,zenoss_username,zenoss_password):
         self.zenoss_server=zenoss_server
@@ -45,4 +46,7 @@ class deviceapi(object):
             self.reqCount +=1
             self.reqheaders.update(self.cookie)
             self.operateResponse=self.pool.urlopen('POST','/zport/dmd/'+self.routers[action]+'_router',body=json.dumps(self.reqdata),headers=self.reqheaders)
+            if self.operateResponse.getheaders().getlist('Content-Type')[0] !='application/json':
+                print('\033[1;31;47mLogin Failed, Please check your username and password !\033[0m')
+                sys.exit(1)
             return self.operateResponse
