@@ -1,113 +1,80 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import paramiko
-import sys
+# Jennings Liu@ 2016-02-11 18:54:16
 import argparse
-import time
-import datetime
-import socket
-import codecs
-def sshcmd(servername,server,user,passwd,port,cmd_list):
-    try:
-        print("Start to process "+server.rstrip()+"\n")
-        log.write("\nStart to process "+servername+':'+server.rstrip()+"\n\n")
-        cmds = open(cmd_list)
-        sshconn= paramiko.SSHClient()
-        sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        #print(ord(passwd))
-        sshconn.connect(hostname=server,port=port,username=user.rstrip(),password=passwd.rstrip(),timeout=10)
-        print("Login to "+server.rstrip()+" successfully\n")
-        log.write("Login to "+server.rstrip()+" successfully\n")
+import configparser
+import sys
+import getpass
+from sshcmd import remotessh
 
-        for cmd in cmds:
-            stdin, stdout, stderr = sshconn.exec_command(cmd)
-            print('The exit code of command <'+cmd.rstrip()+'> is: ',stdout.channel.recv_exit_status())
-            #print(stderr.readlines())
-            log.write(cmd)
-            if stdout.channel.recv_exit_status() == 0:
-                for line in stdout.readlines():
-                    print(line.rstrip())
-                    log.write(line)
-                print('excute command <'+cmd.rstrip() +'> sucessfully')
-            else:
-                for out_line in stderr.readlines()+stdout.readlines():
-                    print(out_line.rstrip())
-                    log.write(out_line)
-                print('\033[1;31;47mexcute command <'+cmd.rstrip()+'> failed\033[0m')
-
-            #print(stderr.readlines())
-            #log.write(stderr.readlines())
-            log.write("\n")
-        sshconn.close()
-        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" Finished \n")
-        log.write("################################################################ \n")
-        return True
-    except paramiko.AuthenticationException as s:
-        print(server.rstrip(),s.__str__(),"\n")
-        log.write(server.rstrip()+" "+s.__str__()+"\n")
-        print("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("################################################################ \n")
-        log.flush()
-        return False
-    except paramiko.SSHException as p:
-        print(server.rstrip(),p.__str__(),"\n")
-        log.write(servername.rstrip()+':'+server.rstrip()+" "+p.__str__()+"\n")
-        print("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("################################################################ \n")
-        log.flush()
-        return False
-    except socket.error as t:
-        print(server.rstrip(),t.__str__(),"\n")
-        log.write(servername.rstrip()+':'+server.rstrip()+" "+t.__str__()+"\n")
-        print("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("Process "+servername.rstrip()+':'+server.rstrip()+" failed \n")
-        log.write("################################################################ \n")
-        log.flush()
-        print(server.rstrip(),t)
-        return False 
-def main():
-    global log 
+if __name__ == "__main__":
+###To out put the comand help 
     arguments = argparse.ArgumentParser()  
-    arguments.add_argument("-s","--server_list",nargs="?",help="The servers list",required=True)
-    arguments.add_argument("-c","--cmd_list",nargs="?",help="The command list",required=True)
-    arguments.add_argument("-l","--log", nargs="?",help="The log file,default result.log",default="result.log")
+    arguments.add_argument("-c","--config",nargs="?",help="Config file",required=True)
     if len(sys.argv) ==1:
         arguments.print_help()
         sys.exit(1)
     args = arguments.parse_args()
-    server_list = args.server_list
-    cmd_list = args.cmd_list
-    log_file = args.log
-    timestamp=time.strftime("%Y%m%d%H%M")
-    if os.path.exists(log_file):
-        os.rename(log_file,log_file+"."+timestamp)
-    log = open(log_file,"w")
-    start_time=datetime.datetime.now()
-    print(start_time)
-    #for hostip in open(server_list):
+    
+##To process the configuration file    
+    config = configparser.ConfigParser()
+    configfile=open(args.config)
+    config.read_file(configfile)
+    server_list=config['server-list']['server-list']
+    solaris_cmd_list=config['cmmmand-list']['solaris-cmds']
+    linux_cmd_list=config['cmmmand-list']['linux-cmds']
+    logfile=config['log']['logfile']
+    if config['account']['username']:
+        username=config['account']['username']
+    if config['account']['password']:
+        password=config['account']['password']
+    configfile.close()
+    
+    checkinglog=open(logfile,'w')
+
+## get the host/user/password info from host list if user/password are not set in the cofig file
     for host_line in open(server_list):
-        if len(host_line) > 8:#aline contain for section, and an IP will at least has 7 characters
-            (host_name,hostip,user,passwd) = host_line.split(",",3)
-            if hostip in ['10.88.126.88','192.168.18.131']:
-                port=2222
-            else:
-                port=22
-            if sshcmd(host_name,hostip,user,passwd,port,cmd_list):
-               print("\nProcess "+host_name+':'+hostip.rstrip()+" successfully \n")
-               print("-----------------------------------------------------------\n")
-               log.flush()
-            else:
-               print("\nProcess "+host_name+':'+hostip.rstrip()+" failed \n")
-               print("-----------------------------------------------------------\n")
-               log.flush()
+        host_info=host_line.split(',')
+        if len(host_info) ==4:
+            hostname=host_info[0].strip()
+            ip=host_info[1].strip()
+            username=host_info[2].strip()
+            password=host_info[3].strip()
+        elif len(host_info) ==1:
+            ip=host_info[0].strip()
         else:
-            continue
-    log.close()
-    end_time=datetime.datetime.now()
-    print(end_time)
-    exit(0)
-if __name__ == "__main__":
-    main()
+            print('Wrong host file format,pls check again')
+
+## set the ssh port 
+
+        if ip in ['10.88.126.88','192.168.18.131']:
+            port=2222
+        else:
+            port=22
+
+## login to the server and check if it is solairs or linux, and then set the command list
+        ssh=remotessh(ip,username,password,port)
+        checkinglog.write('Login to %s successfully.\n'%ip)
+        ssh.sshlogin()
+        osType=ssh.sshruncmd('uname')
+        if osType[0]==0 and osType[1][0].strip() =='Linux':
+            cmd_list=linux_cmd_list
+        else:
+            cmd_list=solaris_cmd_list
+
+## running the check command on remote server
+        checkinglog.write('Checking Begins:\n')
+        for cmd in cmd_list.split(','):
+            checkinglog.write(cmd+'\n\n')
+            run_result=ssh.sshruncmd(cmd)
+            for run_result_detail in run_result[1]:
+                checkinglog.write(run_result_detail)
+                print('%s :%s'%(ip,run_result_detail))
+            checkinglog.write('\n')
+        checkinglog.flush()
+    checkinglog.close()
+    
+
+
+
+
