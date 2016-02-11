@@ -1,67 +1,61 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Jennings Liu@ 2015-06-25 08:45:22
+# Jennings Liu@ 2016-02-11 12:49:35
 import paramiko
+import sys
 import socket
 class remotessh(object):
-    def __init__(self,ip,port,user,passwd,cmdlist,cmdlog):
-        self.ip=ip
-        self.port=port
-        self.user=user
-        self.passwd=passwd
-        self.cmdlist=cmdlist
-        self.cmdlog=cmdlog
-    def exec(self):
+    def __init__(self,ipAddress,userName,passwWord,Port):
+        self.ipAddress=ipAddress
+        self.userName=userName
+        self.passwWord=passwWord
+        self.Port=Port
+    def sshlogin(self):
         try:
-            sshconn= paramiko.SSHClient()
-            sshconnlog=open(self.cmdlog,'w')
-            print("Start to process "+self.ip.rstrip()+"\n")
-            sshconnlog.write("\n"+self.ip.rstrip()+":Start to process "+self.ip.rstrip()+"\n\n")
-            sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            sshconn.connect(hostname=self.ip,port=self.port,username=self.user,password=self.passwd,timeout=10)
-            for cmd in open(self.cmdlist):
-                stdin, stdout, stderr = sshconn.exec_command(cmd)
-                sshconnlog.write(self.ip.rstrip()+":"+cmd)
-                print('The exit code of command <'+cmd.rstrip()+'> is: ',stdout.channel.recv_exit_status())
-                print(self.ip.rstrip()+":"+cmd)
-                if stdout.channel.recv_exit_status() == 0:
-                    for line in stdout.readlines():
-                        print(self.ip.rstrip()+":"+line+"\n")
-                        sshconnlog.write(self.ip.rstrip()+":"+line+"\n")
-                    print('excute command <'+cmd.rstrip() +'> sucessfully')
-                else:
-                    for out_line in stderr.readlines()+stdout.readlines():
-                        print(self.ip.rstrip()+':'+out_line+"\n")
-                        sshconnlog.write(self.ip.rstrip()+':'+out_line+'\n')
-                    print('\033[1;31;47mexcute command <'+cmd.rstrip()+'> failed\033[0m')
-            sshconnlog.write("\n")
-            sshconn.close()
-            print("Process "+self.ip.rstrip()+" successfully \n")
-            sshconnlog.write(self.ip.rstrip()+":Process "+self.ip.rstrip()+" Finished \n")
-            sshconnlog.flush()
-       	    sshconnlog.close()
-            return True
+            print("Login to the server %s .\n "%self.ipAddress)
+            self.sshconn= paramiko.SSHClient()
+            self.sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.sshconn.connect(hostname=self.ipAddress,username=self.userName,password=self.passwWord,timeout=10,port=self.Port)
+            print("Login to the server %s successfully .\n "%self.ipAddress)
         except paramiko.AuthenticationException as s:
-            print(self.ip.rstrip(),s.__str__(),"\n")
-            sshconnlog.write(self.ip.rstrip()+" "+s.__str__()+"\n")
-            print("\033[1;31;47mProcess "+self.ip.rstrip()+" failed \033[0m\n")
-            sshconnlog.write(self.ip.rstrip()+":Process "+self.ip.rstrip()+" failed \n")
-            sshconnlog.flush()
-            sshconnlog.close()
-            return False
+            print("\033[1;31;47mLogin to the server %s failed,pls check your username/password\033[0m.\n "%self.ipAddress.strip())
+            sys.exit(1)
         except paramiko.SSHException as p:
-            print(self.ip.rstrip(),p.__str__(),"\n")
-            sshconnlog.write(self.ip.rstrip()+" "+p.__str__()+"\n")
-            print("\033[1;31;47mProcess "+self.ip.rstrip()+" failed \033[0m\n")
-            sshconnlog.write(self.ip.rstrip()+":Process "+self.ip.rstrip()+" failed \n")
-            sshconnlog.flush()
-            sshconnlog.close()
-            return False
+            print("\033[1;31;47mLogin to the server %s failed,the ssh2 protocol negotiation or logic error\033[0m.\n "%self.ipAddress.rstrip())
+            sys.exit(1)
+        except paramiko.BadHostKeyException as k:
+            print("\033[1;31;47mLogin to the server %s failed,the ssh key can't be verified\033[0m.\n "%self.ipAddress.rstrip())
+            sys.exit(1)
         except socket.error as t:
-            print(self.ip.rstrip(),t.__str__(),"\n")
-            sshconnlog.write(self.ip.rstrip()+" "+t.__str__()+"\n")
-            print("\033[1;31;47mProcess "+self.ip.rstrip()+" failed \033[0m\n")
-            sshconnlog.write(self.ip.rstrip()+":Process "+self.ip.rstrip()+" failed \n")
-            sshconnlog.flush()
-            sshconnlog.close()
-            return False
+            print("\033[1;31;47mLogin to the server %s failed,the server can't be reached\033[0m.\n "%self.ipAddress.rstrip())
+            sys.exit(1)
+
+    def sshruncmd(self,cmd):
+        stdin, stdout, stderr = self.sshconn.exec_command(cmd)
+        outcontent=stdout.readlines()
+        errorcontent=stderr.readlines()
+        exit_code=stdout.channel.recv_exit_status() 
+        print('%s: excuting command  \" %s \". \n'%(self.ipAddress,cmd.rstrip()))
+        print('%s: The exit code of command %s  is : %s .\n'%(self.ipAddress,cmd.rstrip(),stdout.channel.recv_exit_status()))
+        if exit_code == 0:
+            print("%s: excute  command \"  %s \" successfully !\n"%(self.ipAddress,cmd.rstrip()))
+            #for line in stdout.readlines():
+            #    print('%s: %s.\n'%(self.ipAddress,line.rstrip()))
+            result=outcontent
+            return exit_code,result
+        else:
+            print('\033[1;31;47m%s: excute command %s failed\033[0m.\n'%(self.ipAddress,cmd.rstrip()))
+            #for line in stderr.readlines()+stdout.readlines():
+            #    print('%s: %s.\n'%(self.ipAddress,line.rstrip()))
+            #print('%s out'%stdout.readlines())
+            #print('%s error'%stderr.readlines())
+            if len(outcontent) == 0:
+                result=errorcontent
+            else:
+                result= outcontent+errorcontent
+            return exit_code,result
+    def sshlogoff(self):
+            self.sshconn.close()
+
+
+
