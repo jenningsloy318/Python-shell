@@ -5,30 +5,35 @@ import paramiko
 import sys
 import socket
 class remotessh(object):
-    def __init__(self,ipAddress,userName,passwWord,Port):
+    def __init__(self):
+        self.sshconn= paramiko.SSHClient()
+        self.sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    def sshlogin(self,ipAddress,userName,passwWord,Port):
         self.ipAddress=ipAddress
         self.userName=userName
         self.passwWord=passwWord
         self.Port=Port
-    def sshlogin(self):
         try:
             print("Login to the server %s .\n "%self.ipAddress)
-            self.sshconn= paramiko.SSHClient()
-            self.sshconn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.sshconn.connect(hostname=self.ipAddress,username=self.userName,password=self.passwWord,timeout=10,port=self.Port)
             print("Login to the server %s successfully .\n "%self.ipAddress)
+            return True
         except paramiko.AuthenticationException as s:
+            print(s)
             print("\033[1;31;47mLogin to the server %s failed,pls check your username/password\033[0m.\n "%self.ipAddress.strip())
-            sys.exit(1)
+            return False
         except paramiko.SSHException as p:
+            print(p)
             print("\033[1;31;47mLogin to the server %s failed,the ssh2 protocol negotiation or logic error\033[0m.\n "%self.ipAddress.rstrip())
-            sys.exit(1)
+            return False
         except paramiko.BadHostKeyException as k:
+            print(k)
             print("\033[1;31;47mLogin to the server %s failed,the ssh key can't be verified\033[0m.\n "%self.ipAddress.rstrip())
-            sys.exit(1)
+            return False
         except socket.error as t:
+            print(t)
             print("\033[1;31;47mLogin to the server %s failed,the server can't be reached\033[0m.\n "%self.ipAddress.rstrip())
-            sys.exit(1)
+            return False
 
     def sshruncmd(self,cmd):
         stdin, stdout, stderr = self.sshconn.exec_command(cmd)
