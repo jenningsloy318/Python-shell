@@ -13,54 +13,97 @@ import sys
 import ssl
 
 class pyvmware(object):
-    def __init__(self,host,user,passwd):
-        self.host=host
-        self.user=user
-        self.passwd=passwd
-    def login(self):
+    def __init__(self):
         ssl._create_default_https_context = ssl._create_unverified_context
         default_context = ssl._create_default_https_context
         default_context.verify_mode=ssl.CERT_NONE
         requests.packages.urllib3.disable_warnings()
+
+    def login(self,host,user,passwd):
+        self.host=host
+        self.user=user
+        self.passwd=passwd
         self.connection=SmartConnect(host=self.host,user=self.user,pwd=self.passwd)
-        return self.connection
-    def get_dcs(self):
         self.content=self.connection.RetrieveContent()
         self.viewManager=self.content.viewManager
         self.rootFolder=self.content.rootFolder
-        self.dcs=self.viewManager.CreateContainerView(self.rootFolder,[vim.Datacenter],True)
-        return self.dcs.view
-    def get_datastores(self,datacenter):
-        self.datastore=datacenter.datastore
-        return self.datastore
-        print self.datastore
-    def get_clusters(self,datacenter):
-        self.hostfolder=datacenter.hostFolder
-        clusters=self.hostfolder.childEntity
+        self.dcs=self.viewManager.CreateContainerView(self.rootFolder,[vim.Datacenter],True).view[0]
+
+    def get_dcs(self):
+        dcs={}
+        dcs[self.dcs.name]=self.dcs
+        return dcs
+
+    def get_datastores(self):
+        datastores={}
+        self.datastores=self.dcs.datastore
+        for datastore in self.datastores:
+            datastores[datastore.name]=datastore
+        return datastores
+
+    def get_clusters(self):
+        clusters={}
+        self.hostfolder=self.dcs.hostFolder
+        self.clusters=self.hostfolder.childEntity
+        for cluster in self.clusters:
+            clusters[cluster.name]=cluster
         return clusters
-    def get_top_resourcepool(self,cluster):
-        self.top_resourcepool=cluster.resourcePool
-        return self.top_resourcepool
+
+    def get_cluster_top_resourcepool(self,cluster):
+        cluster_top_resourcepools={}
+        cluster_top_resourcepools[cluster.name]=cluster.resourcePool
+        return cluster_top_resourcepools
+
+    def get_all_top_resourcepools(self):
+        all_top_resourcepools={}
+        for cluster in self.get_clusters().values():
+            all_top_resourcepools[cluster.name]=cluster.resourcePool
+        return all_top_resourcepools
+
+    def get_sub_resourcepools(self,resourcepool):
+        sub_resourcepools={}
+        for sub_resourcepool in resourcepool.resourcePool:
+            sub_resourcepools[sub_resourcepool.name]=sub_resourcepool
+        return sub_resourcepools
+
     def get_cluster_hosts(self,cluster):
+        cluster_hosts={}
         self.hosts=cluster.host
-        return self.hosts
-    def get_resourecepool_vms(self,resourcepool,vmlist):
+        for host in self.hosts:
+            cluster_hosts[host.name]=host
+        return cluster_hosts
+
+    def get_all_hosts(self):
+        all_hosts={}
+        for cluster in self.get_clusters().values():
+            for host in cluster.host:
+                all_hosts[host.name]=host
+        return all_hosts
+        
+
+    def get_all_vms(self,vmdict):
+        for top_resourcepool in self.get_all_top_resourcepools().values():
+            self.get_resourecepool_vms(top_resourcepool,vmdict)
+
+    def get_cluster_vms(self,cluster,vmdict):
+        top_resourcepool=self.get_cluster_top_resourcepool(cluster).values()
+        self.get_resourecepool_vms(top_resourcepool,vmdict)
+
+    def get_resourecepool_vms(self,resourcepool,vmdict):
         if  hasattr(resourcepool,'resourcePool') and hasattr(resourcepool,'vm'):
             for vm in resourcepool.vm:
-                vmtuple=self.get_vminfo(vm)
-                vmlist.append(vmtuple)
+                vmdict[vm.name]=vm
             sub_resourcepool=resourcepool.resourcePool
             for c in sub_resourcepool:
-                self.get_resourecepool_vms(c,vmlist)
+                self.get_resourecepool_vms(c,vmdict)
         elif  hasattr(resourcepool,'resourcePool') and not hasattr(resourcepool,'vm'):
             sub_resourcepool=resourcepool.resourcePool
             for c in sub_resourcepool:
-                self.get_resourecepool_vms(c,vmlist)
+                self.get_resourecepool_vms(c,vmdict)
         elif not hasattr(resourcepool,'resourcePool') and  hasattr(resourcepool,'vm'):
             for vm in resourcepool.vm:
-                vmtuple=self.get_vminfo(vm)
-                vmlist.append(vmtuple)
-        return vmlist
+                vmdict[vm.name]=vm
+
     def get_vminfo(self,vm):
         vmsummary=vm.summary
         ip=vmsummary.guest.ipAddress
@@ -76,8 +119,8 @@ class pyvmware(object):
         for disk in vm.layout.disk:
             diskfile=disk.diskFile[0]
             disks.append(diskfile)
-        vminfo=[{'VM name':vmname},{'VM IP address':ip},{'VM Hostname':hostname},{'OS':guestOS},{'Power State':powerstate},{'Memory':memory},{'CPU':cpu},{'VM tool status':vmtoolstatus},{'VM tool Version':vmtoolversion},{'Disks':disks}]
-    #    return vmname,ip,hostname,guestOS,powerstate,memory,cpu,vmtoolversion,vmtoolstatus,disks
+        vminfo={'vmName':vmname,'vmIP':ip,'vmHostname':hostname,'vmOS':guestOS,'vmPowerState':powerstate,
+                'vmMemory':memory,'vmCPU':cpu,'vmtoolStatus':vmtoolstatus,'vmToolVersion':vmtoolversion,'vmDisks':disks}
         return vminfo
 
     def get_datastore_info(self,datastore):
@@ -101,7 +144,6 @@ class pyvmware(object):
                 used='0%'
             else:
                 used='100%'
-            datastoreinfo=[{'Datastore Name':name},{'Used':used},{'Total Space':str(capability)+'G'},{'Free Space':str(freeSpace)+'G'},{'VM List':VMs}]
-    #        return 'Datastore Name: '+str(name),'Datastore Location: '+str(url),'Used: '+str(used),'Total Space: '+str(capability)+'G','Free Space: '+str(freeSpace)+'G',VMs
+            datastoreinfo=[{'DatastoreName':name},{'Used':used},{'TotalSpace':str(capability)+'G'},{'FreeSpace':str(freeSpace)+'G'},{'vmList':VMs}]
             return datastoreinfo
 
