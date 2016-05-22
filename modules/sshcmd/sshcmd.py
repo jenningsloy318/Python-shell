@@ -17,6 +17,7 @@ class remotessh(object):
             print("Login to the server %s .\n "%self.ipAddress)
             self.sshconn.connect(hostname=self.ipAddress,username=self.userName,password=self.passwWord,timeout=10,port=self.Port)
             print("Login to the server %s successfully .\n "%self.ipAddress)
+            self.sftp=self.sshconn.open_sftp()
             return True
         except paramiko.AuthenticationException as s:
             print(s)
@@ -57,8 +58,14 @@ class remotessh(object):
             if len(outcontent) == 0:
                 result=errorcontent
             else:
-                result= outcontent+errorcontent
+                result= ''.join([outcontent,errorcontent])
             return exit_code,result
+    def sshupload(self,localpath,remotepath):
+        print('Transfering local file: [ %s ] to remote  %s: [ %s ]\n'%(localpath,self.ipAddress,remotepath))
+        self.sftp.put(localpath,remotepath)
+    def sshdownload(self,remote,local):
+        print('Downloading remote %s: [ %s ] to local: %s\n'%(self.ipAddress,remotepath,localpath))
+        self.sftp.put(localpath,remotepath)
     def sshlogoff(self):
             self.sshconn.close()
 
