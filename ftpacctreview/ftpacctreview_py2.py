@@ -10,8 +10,8 @@ import getpass
 def ldapaccts(servername,ldappw):
         ldapacct_list=[]
         ldapserver='ldap://10.88.126.150'
-        dn='cn=root,dc=synnex,dc=org'
-        ldap_base='ou='+servername+',ou=proftpd servers,dc=synnex,dc=org'
+        dn='cn=root,dc=example,dc=org'
+        ldap_base='ou='+servername+',ou=proftpd servers,dc=example,dc=org'
         print(ldap_base)
         # define the Server and the Connection objects
         ldapserver='ldap://10.88.126.150'
@@ -41,7 +41,7 @@ def analyze(authfile):
     for loginline in open(authfile):
         if login_pattern.search(loginline):
             loginline_list=loginline.split()
-            if loginline.startswith('Synnex'):
+            if loginline.startswith('example'):
                 username=loginline_list[8].replace('"','')
                 logintime=loginline_list[5].replace('[','')
             else:
